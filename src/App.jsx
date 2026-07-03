@@ -171,9 +171,14 @@ export default function App() {
         engineRef.current.setPlayerId(data.player_id || data.playerId || 'p1');
       }
       setPlayers(data.players || []);
-      if (gameMode === 'ai') {
-        // AI mode - go straight to waiting for server to start
-        setGameScreen('room');
+      if (gameMode === 'ai' || stateRef.current.gameMode === 'ai') {
+        // AI mode - auto ready and start match
+        setGameScreen('matchmaking');
+        setIsReady(true);
+        networkRef.current?.setReady();
+        setTimeout(() => {
+          networkRef.current?.startFight();
+        }, 800);
       } else {
         setGameScreen('room');
       }
