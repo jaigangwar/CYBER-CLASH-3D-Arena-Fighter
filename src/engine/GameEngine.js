@@ -728,10 +728,10 @@ export class GameEngine {
    */
   applyServerState(state) {
     if (!state) return;
-    this._serverState = state;
+    if (this.mode !== 'online') return;
 
     // Determine which server player maps to our local player/enemy
-    const isP1 = this._playerId === 'p1';
+    const isP1 = this._playerId === state.p1_id || this._playerId === 'p1';
     const myData = isP1 ? state.p1 : state.p2;
     const oppData = isP1 ? state.p2 : state.p1;
 

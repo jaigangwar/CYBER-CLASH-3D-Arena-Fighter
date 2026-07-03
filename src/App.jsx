@@ -215,10 +215,11 @@ export default function App() {
       }
 
       // Map player/enemy based on playerId
-      const me = playerId === 'p1' ? data.p1 : data.p2;
-      const enemy = playerId === 'p1' ? data.p2 : data.p1;
-      const myName = playerId === 'p1' ? (data.p1_name || playerName) : (data.p2_name || playerName);
-      const enemyName = playerId === 'p1' ? (data.p2_name || opponentName) : (data.p1_name || opponentName);
+      const isP1 = playerId === data.p1_id || playerId === 'p1';
+      const me = isP1 ? data.p1 : data.p2;
+      const enemy = isP1 ? data.p2 : data.p1;
+      const myName = isP1 ? (data.p1_name || playerName) : (data.p2_name || playerName);
+      const enemyName = isP1 ? (data.p2_name || opponentName) : (data.p1_name || opponentName);
 
       if (me && enemy) {
         setHud({
@@ -240,8 +241,8 @@ export default function App() {
           },
           roundNumber: data.round || data.roundNumber || 1,
           roundTimer: data.timer ?? data.roundTimer ?? 99,
-          playerWins: playerId === 'p1' ? (data.p1_wins ?? 0) : (data.p2_wins ?? 0),
-          enemyWins: playerId === 'p1' ? (data.p2_wins ?? 0) : (data.p1_wins ?? 0),
+          playerWins: isP1 ? (data.p1_wins ?? 0) : (data.p2_wins ?? 0),
+          enemyWins: isP1 ? (data.p2_wins ?? 0) : (data.p1_wins ?? 0),
           gameState: data.state || data.gameState || 'fighting',
           playerName: myName,
           enemyName: enemyName,

@@ -153,6 +153,8 @@ class GameEngine:
         return {
             "p1": self.p1.to_dict(),
             "p2": self.p2.to_dict(),
+            "p1_id": self.p1.player_id,
+            "p2_id": self.p2.player_id,
             "round": self.round,
             "timer": round(self.timer, 2),
             "p1_wins": self.p1_wins,
