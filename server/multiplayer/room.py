@@ -26,8 +26,9 @@ from multiplayer import messages as msg
 
 
 def _generate_code() -> str:
-    """Generate a random 6-character uppercase room code."""
-    return "".join(random.choices(string.ascii_uppercase + string.digits, k=ROOM_CODE_LENGTH))
+    """Generate a random 6-character uppercase room code (excluding ambiguous characters)."""
+    chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+    return "".join(random.choices(chars, k=ROOM_CODE_LENGTH))
 
 
 class Room:

@@ -40,6 +40,13 @@ export default function App() {
   const [players, setPlayers] = useState([]);
   const [playerId, setPlayerId] = useState(null);
   const [opponentName, setOpponentName] = useState('');
+  
+  // Use a ref to access latest state inside network event listeners (which have empty dependency array)
+  const stateRef = useRef({ playerId: null, playerName, opponentName });
+  useEffect(() => {
+    stateRef.current = { playerId, playerName, opponentName };
+  }, [playerId, playerName, opponentName]);
+
   const [isReady, setIsReady] = useState(false);
   const [opponentReady, setOpponentReady] = useState(false);
   const [countdown, setCountdown] = useState(null);
@@ -57,11 +64,13 @@ export default function App() {
   // ═══ KEY TRACKING ═══
   useEffect(() => {
     const handleKeyDown = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
       keysRef.current[e.code] = true;
       keysRef.current[e.key] = true;
       setActiveKeys(prev => ({ ...prev, [e.code]: true, [e.key]: true }));
     };
     const handleKeyUp = (e) => {
+      if (['INPUT', 'TEXTAREA'].includes(e.target.tagName)) return;
       keysRef.current[e.code] = false;
       keysRef.current[e.key] = false;
       setActiveKeys(prev => ({ ...prev, [e.code]: false, [e.key]: false }));
@@ -157,7 +166,10 @@ export default function App() {
     const onRoomCreated = (data) => {
       setRoomCode(data.room_code || data.roomCode || '');
       setPlayerId(data.player_id || data.playerId || 'p1');
-      if (engineRef.current) engineRef.current.setPlayerId(data.player_id || data.playerId || 'p1');
+      if (engineRef.current) {
+        engineRef.current.mode = 'online';
+        engineRef.current.setPlayerId(data.player_id || data.playerId || 'p1');
+      }
       setPlayers(data.players || []);
       if (gameMode === 'ai') {
         // AI mode - go straight to waiting for server to start
@@ -170,20 +182,27 @@ export default function App() {
     const onRoomJoined = (data) => {
       setRoomCode(data.room_code || data.roomCode || '');
       setPlayerId(data.player_id || data.playerId || 'p2');
-      if (engineRef.current) engineRef.current.setPlayerId(data.player_id || data.playerId || 'p2');
+      if (engineRef.current) {
+        engineRef.current.mode = 'online';
+        engineRef.current.setPlayerId(data.player_id || data.playerId || 'p2');
+      }
       setPlayers(data.players || []);
+      const opp = (data.players || []).find(p => p.id !== (data.player_id || data.playerId || 'p2'));
+      if (opp) setOpponentName(opp.name || 'OPPONENT');
       setGameScreen('room');
     };
 
     const onPlayerJoined = (data) => {
       setPlayers(data.players || []);
-      const opp = (data.players || []).find(p => p.id !== playerId);
+      const currentPid = stateRef.current.playerId || networkRef.current?.playerId;
+      const opp = (data.players || []).find(p => p.id !== currentPid);
       if (opp) setOpponentName(opp.name || 'OPPONENT');
     };
 
     const onPlayerReady = (data) => {
       setPlayers(data.players || []);
-      const opp = (data.players || []).find(p => p.id !== playerId);
+      const currentPid = stateRef.current.playerId || networkRef.current?.playerId;
+      const opp = (data.players || []).find(p => p.id !== currentPid);
       if (opp) setOpponentReady(opp.ready || false);
     };
 
@@ -210,16 +229,20 @@ export default function App() {
     };
 
     const onGameState = (data) => {
-      if (engineRef.current && playerId) {
-        engineRef.current.applyServerState(data, playerId);
+      const currentPid = stateRef.current.playerId || networkRef.current?.playerId;
+      const currentPName = stateRef.current.playerName;
+      const currentOName = stateRef.current.opponentName;
+      
+      if (engineRef.current && currentPid) {
+        engineRef.current.applyServerState(data, currentPid);
       }
 
-      // Map player/enemy based on playerId
-      const isP1 = playerId === data.p1_id || playerId === 'p1';
+      // Map player/enemy based on currentPid
+      const isP1 = currentPid === data.p1_id || currentPid === 'p1';
       const me = isP1 ? data.p1 : data.p2;
       const enemy = isP1 ? data.p2 : data.p1;
-      const myName = isP1 ? (data.p1_name || playerName) : (data.p2_name || playerName);
-      const enemyName = isP1 ? (data.p2_name || opponentName) : (data.p1_name || opponentName);
+      const myName = isP1 ? (data.p1_name || currentPName) : (data.p2_name || currentPName);
+      const enemyName = isP1 ? (data.p2_name || currentOName) : (data.p1_name || currentOName);
 
       if (me && enemy) {
         setHud({
@@ -251,12 +274,13 @@ export default function App() {
     };
 
     const onHitEvent = (data) => {
-      if (engineRef.current) engineRef.current.handleHitEvent(data);
+      const currentPid = stateRef.current.playerId || networkRef.current?.playerId;
+      if (engineRef.current) engineRef.current.handleHitEvent(data, currentPid);
       // Add damage numbers
       const dmg = {
         damage: data.damage || 0,
         critical: data.critical || false,
-        x: Math.random() * 200 + (data.target === playerId ? 100 : window.innerWidth - 400),
+        x: Math.random() * 200 + (data.target === currentPid ? 100 : window.innerWidth - 400),
         y: Math.random() * 100 + 80,
         time: performance.now(),
       };
