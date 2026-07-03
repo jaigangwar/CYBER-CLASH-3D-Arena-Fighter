@@ -300,6 +300,7 @@ export class NetworkManager {
   createRoom(mode, playerName, charClass = 'brawler') {
     this.playerName = playerName;
     this.charClass = charClass;
+    this.roomMode = mode;
     return this._send({
       type: 'create_room',
       mode: mode,

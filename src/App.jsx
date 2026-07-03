@@ -171,7 +171,7 @@ export default function App() {
         engineRef.current.setPlayerId(data.player_id || data.playerId || 'p1');
       }
       setPlayers(data.players || []);
-      if (gameMode === 'ai' || stateRef.current.gameMode === 'ai') {
+      if (networkRef.current?.roomMode === 'ai' || gameMode === 'ai' || stateRef.current.gameMode === 'ai') {
         // AI mode - auto ready and start match
         setGameScreen('matchmaking');
         setIsReady(true);
@@ -233,7 +233,8 @@ export default function App() {
       }
     };
 
-    const onGameState = (data) => {
+    const onGameState = (payload) => {
+      const data = payload.state || payload;
       const currentPid = stateRef.current.playerId || networkRef.current?.playerId;
       const currentPName = stateRef.current.playerName;
       const currentOName = stateRef.current.opponentName;
