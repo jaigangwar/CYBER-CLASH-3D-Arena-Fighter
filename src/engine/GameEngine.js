@@ -36,12 +36,21 @@ class AudioSystem {
   constructor() { this.ctx = null; this.ok = false; }
 
   init() {
-    try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); this.ok = true; }
-    catch (e) { /* ignore */ }
+    if (this.ctx) {
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      this.ok = true;
+      return;
+    }
+    try { 
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)(); 
+      if (this.ctx.state === 'suspended') this.ctx.resume();
+      this.ok = true; 
+    } catch (e) { /* ignore */ }
   }
 
   play(type) {
     if (!this.ok || !this.ctx) return;
+    if (this.ctx.state === 'suspended') this.ctx.resume();
     try {
       const now = this.ctx.currentTime;
       const osc = this.ctx.createOscillator();
@@ -57,7 +66,9 @@ class AudioSystem {
         dodge:   () => { osc.type='sine'; osc.frequency.setValueAtTime(400,now); osc.frequency.exponentialRampToValueAtTime(800,now+0.15); filt.type='lowpass'; filt.frequency.value=2000; gain.gain.setValueAtTime(0.1,now); gain.gain.exponentialRampToValueAtTime(0.001,now+0.2); osc.start(now); osc.stop(now+0.2); },
         ko:      () => { osc.type='sawtooth'; osc.frequency.setValueAtTime(600,now); osc.frequency.exponentialRampToValueAtTime(30,now+0.8); filt.type='lowpass'; filt.frequency.value=1500; gain.gain.setValueAtTime(0.4,now); gain.gain.exponentialRampToValueAtTime(0.001,now+1.0); osc.start(now); osc.stop(now+1.0); this._noise(0.35,0.5); },
         round:   () => { osc.type='sine'; osc.frequency.setValueAtTime(523,now); filt.type='lowpass'; filt.frequency.value=3000; gain.gain.setValueAtTime(0.2,now); gain.gain.exponentialRampToValueAtTime(0.001,now+0.5); osc.start(now); osc.stop(now+0.5); },
-        fight:   () => { osc.type='sawtooth'; osc.frequency.setValueAtTime(200,now); osc.frequency.exponentialRampToValueAtTime(600,now+0.3); filt.type='lowpass'; filt.frequency.value=2000; gain.gain.setValueAtTime(0.3,now); gain.gain.exponentialRampToValueAtTime(0.001,now+0.4); osc.start(now); osc.stop(now+0.4); },
+        fight:   () => { osc.type='sawtooth'; osc.frequency.setValueAtTime(200,now); osc.frequency.exponentialRampToValueAtTime(800,now+0.3); filt.type='lowpass'; filt.frequency.value=2000; gain.gain.setValueAtTime(0.3,now); gain.gain.exponentialRampToValueAtTime(0.001,now+0.4); osc.start(now); osc.stop(now+0.4); },
+        ui_hover:() => { osc.type='sine'; osc.frequency.setValueAtTime(800,now); gain.gain.setValueAtTime(0.05,now); gain.gain.exponentialRampToValueAtTime(0.001,now+0.1); osc.start(now); osc.stop(now+0.1); },
+        ui_click:() => { osc.type='square'; osc.frequency.setValueAtTime(1200,now); osc.frequency.exponentialRampToValueAtTime(400,now+0.1); gain.gain.setValueAtTime(0.1,now); gain.gain.exponentialRampToValueAtTime(0.001,now+0.1); osc.start(now); osc.stop(now+0.1); }
       };
       if (configs[type]) configs[type]();
     } catch (e) { /* ignore */ }
@@ -816,7 +827,7 @@ export class GameEngine {
   handleHitEvent(event) {
     if (!event) return;
 
-    const isP1 = this._playerId === 'p1';
+    const isP1 = this._playerId === event.p1_id || this._playerId === 'p1';
     const attackerIsMe = event.attacker === this._playerId;
 
     // Determine the defender's 3D position for effects
@@ -1477,6 +1488,7 @@ export class GameEngine {
     setTimeout(() => document.body.classList.remove('screen-shake','screen-shake-heavy'), heavy?300:200);
   }
 
+
   _slowMo(dur=0.3, factor=0.15) {
     this.slowMoTimer=dur; this.slowMoFactor=factor;
     setTimeout(() => { this.slowMoFactor=1; }, dur*1000);
@@ -1535,8 +1547,8 @@ export class GameEngine {
       db.rotation.set(Math.random(),Math.random(),Math.random()); s.add(db); this.arenaObjects.push(db);
     }
     // Lights
-    s.add(new THREE.AmbientLight(0x1a1a3e,0.4));
-    const dl=new THREE.DirectionalLight(0xccccff,0.6);
+    s.add(new THREE.AmbientLight(0x2a2a4e, 1.2));
+    const dl=new THREE.DirectionalLight(0xccccff,1.0);
     dl.position.set(5,15,10); dl.castShadow=true;
     dl.shadow.mapSize.width=2048; dl.shadow.mapSize.height=2048;
     dl.shadow.camera.near=0.1; dl.shadow.camera.far=50;
@@ -1552,7 +1564,7 @@ export class GameEngine {
     // Background buildings
     for (let i=0;i<20;i++) {
       const h=5+Math.random()*25, w=2+Math.random()*6, d=2+Math.random()*6;
-      const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshStandardMaterial({color:0x0a0a18,metalness:0.9,roughness:0.5}));
+      const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), new THREE.MeshStandardMaterial({color:0x151525,metalness:0.9,roughness:0.5}));
       const a=(i/20)*Math.PI*2+Math.random()*0.3, r=30+Math.random()*20;
       b.position.set(Math.cos(a)*r,h/2,Math.sin(a)*r); b.rotation.y=Math.random()*Math.PI; s.add(b);
       for (let j=0;j<Math.floor(Math.random()*5)+2;j++) {

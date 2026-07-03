@@ -16,20 +16,20 @@ def _msg(msg_type: str, **kwargs: Any) -> str:
 
 # ── Lobby / Room ──────────────────────────────────────────────────────────
 
-def room_created(room_code: str, player_id: str) -> str:
-    return _msg("room_created", room_code=room_code, player_id=player_id)
+def room_created(room_code: str, player_id: str, players: list[dict]) -> str:
+    return _msg("room_created", room_code=room_code, player_id=player_id, players=players)
 
 
-def room_joined(room_code: str, player_id: str, players: list[str]) -> str:
+def room_joined(room_code: str, player_id: str, players: list[dict]) -> str:
     return _msg("room_joined", room_code=room_code, player_id=player_id, players=players)
 
 
-def player_joined(player_id: str) -> str:
-    return _msg("player_joined", player_id=player_id)
+def player_joined(player_id: str, players: list[dict]) -> str:
+    return _msg("player_joined", player_id=player_id, players=players)
 
 
-def player_ready(player_id: str) -> str:
-    return _msg("player_ready", player_id=player_id)
+def player_ready(player_id: str, players: list[dict]) -> str:
+    return _msg("player_ready", player_id=player_id, players=players)
 
 
 def countdown(seconds: int) -> str:

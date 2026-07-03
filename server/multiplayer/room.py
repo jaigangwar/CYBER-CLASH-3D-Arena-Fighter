@@ -69,6 +69,18 @@ class Room:
         return list(self.players.keys())
 
     @property
+    def players_info(self) -> list[dict]:
+        return [
+            {
+                "id": pid,
+                "name": self.player_names.get(pid, "Player"),
+                "char_class": self.player_classes.get(pid, "brawler"),
+                "ready": pid in self.ready
+            }
+            for pid in self.players.keys()
+        ]
+
+    @property
     def is_full(self) -> bool:
         return len(self.players) >= 2
 

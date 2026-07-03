@@ -68,7 +68,7 @@ async def websocket_endpoint(ws: WebSocket) -> None:
                 current_room = room
                 _player_rooms[player_id] = room.code
 
-                await ws.send_text(msg.room_created(room.code, player_id))
+                await ws.send_text(msg.room_created(room.code, player_id, room.players_info))
 
                 # If AI mode, auto-start is available immediately
                 if mode == "ai":
@@ -92,12 +92,12 @@ async def websocket_endpoint(ws: WebSocket) -> None:
                 _player_rooms[player_id] = room.code
 
                 await ws.send_text(
-                    msg.room_joined(room.code, player_id, room.player_ids)
+                    msg.room_joined(room.code, player_id, room.players_info)
                 )
                 # Notify existing players
                 for pid in room.player_ids:
                     if pid != player_id:
-                        await room.send_to(pid, msg.player_joined(player_id))
+                        await room.send_to(pid, msg.player_joined(player_id, room.players_info))
 
             # ── MATCHMAKE ────────────────────────────────────────────
             elif msg_type == "matchmake":
@@ -123,7 +123,7 @@ async def websocket_endpoint(ws: WebSocket) -> None:
             elif msg_type == "ready":
                 if current_room:
                     current_room.mark_ready(player_id)
-                    await current_room.broadcast(msg.player_ready(player_id))
+                    await current_room.broadcast(msg.player_ready(player_id, current_room.players_info))
 
                     # Auto-start if all ready
                     if current_room.all_ready and current_room.engine is None:

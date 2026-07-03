@@ -548,26 +548,37 @@ export default function App() {
     setGameScreen('lobby');
   };
 
+  const playUISound = (type = 'ui_click') => {
+    if (engineRef.current && engineRef.current.audio) {
+      engineRef.current.audio.play(type);
+    }
+  };
+
   const handleCreateRoom = () => {
+    playUISound('ui_click');
     networkRef.current?.createRoom('pvp', playerName.trim(), charClass);
   };
 
   const handleJoinRoom = () => {
+    playUISound('ui_click');
     if (!joinCode.trim()) return;
     networkRef.current?.joinRoom(joinCode.trim().toUpperCase(), playerName.trim(), charClass);
   };
 
   const handleQuickMatch = () => {
+    playUISound('ui_click');
     setGameScreen('matchmaking');
     networkRef.current?.matchmake(playerName.trim(), charClass);
   };
 
   const handleReady = () => {
+    playUISound('ui_click');
     setIsReady(true);
     networkRef.current?.setReady();
   };
 
   const handleStartFight = () => {
+    playUISound('ui_click');
     networkRef.current?.startFight();
   };
 
@@ -585,12 +596,14 @@ export default function App() {
   };
 
   const handleLeaveRoom = () => {
+    playUISound('ui_click');
     networkRef.current?.leaveRoom();
     resetMultiplayerState();
     setGameScreen('menu');
   };
 
   const handleReturnToMenu = () => {
+    playUISound('ui_click');
     networkRef.current?.leaveRoom();
     resetMultiplayerState();
     if (engineRef.current) engineRef.current.returnToMenu?.();
@@ -672,17 +685,17 @@ export default function App() {
             <div className="class-selection-container">
               <label className="name-input-label">SELECT FIGHTER CLASS</label>
               <div className="class-cards">
-                <div className={`class-card ${charClass === 'brawler' ? 'selected' : ''}`} onClick={() => setCharClass('brawler')}>
+                <div className={`class-card ${charClass === 'brawler' ? 'selected' : ''}`} onClick={() => { playUISound('ui_click'); setCharClass('brawler'); }}>
                   <span className="class-icon">🥊</span>
                   <div className="class-name">BRAWLER</div>
                   <div className="class-desc">Balanced & Durable</div>
                 </div>
-                <div className={`class-card ${charClass === 'ninja' ? 'selected' : ''}`} onClick={() => setCharClass('ninja')}>
+                <div className={`class-card ${charClass === 'ninja' ? 'selected' : ''}`} onClick={() => { playUISound('ui_click'); setCharClass('ninja'); }}>
                   <span className="class-icon">🥷</span>
                   <div className="class-name">NINJA</div>
                   <div className="class-desc">Fast & Deadly</div>
                 </div>
-                <div className={`class-card ${charClass === 'mage' ? 'selected' : ''}`} onClick={() => setCharClass('mage')}>
+                <div className={`class-card ${charClass === 'mage' ? 'selected' : ''}`} onClick={() => { playUISound('ui_click'); setCharClass('mage'); }}>
                   <span className="class-icon">🔮</span>
                   <div className="class-name">MAGE</div>
                   <div className="class-desc">Ranged Energy</div>
@@ -691,16 +704,16 @@ export default function App() {
             </div>
 
             <div className="menu-buttons">
-              <button className="menu-btn" onClick={handleSoloVsAI}>
+              <button className="menu-btn" onClick={() => { playUISound('ui_click'); handleSoloVsAI(); }}>
                 🤖 SOLO VS AI
               </button>
-              <button className="menu-btn multiplayer-btn" onClick={handleMultiplayer}>
+              <button className="menu-btn multiplayer-btn" onClick={() => { playUISound('ui_click'); handleMultiplayer(); }}>
                 ⚔ MULTIPLAYER
               </button>
-              <button className="menu-btn webcam-btn" onClick={toggleWebcam}>
+              <button className="menu-btn webcam-btn" onClick={() => { playUISound('ui_click'); toggleWebcam(); }}>
                 {webcamActive ? '◉ WEBCAM ON — TAP TO DISABLE' : '◎ ENABLE GESTURE CONTROLS'}
               </button>
-              <button className="menu-btn secondary" onClick={() => setShowControls(true)}>
+              <button className="menu-btn secondary" onClick={() => { playUISound('ui_click'); setShowControls(true); }}>
                 ⌨ CONTROLS
               </button>
             </div>
