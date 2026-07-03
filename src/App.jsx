@@ -556,12 +556,14 @@ export default function App() {
 
   const handleCreateRoom = () => {
     playUISound('ui_click');
+    setGameMode('pvp');
     networkRef.current?.createRoom('pvp', playerName.trim(), charClass);
   };
 
   const handleJoinRoom = () => {
     playUISound('ui_click');
     if (!joinCode.trim()) return;
+    setGameMode('pvp');
     networkRef.current?.joinRoom(joinCode.trim().toUpperCase(), playerName.trim(), charClass);
   };
 
